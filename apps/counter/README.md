@@ -1,5 +1,7 @@
 # Counter
 
+![Counter app screenshot](../../docs/screenshots/counter.png)
+
 The app-model teaching app: `Model`, `Msg`, `update` in one native
 window, with a repeating timer on the effects channel (`fx.startTimer`)
 and a journaled clock read (`fx.wallMs()`).

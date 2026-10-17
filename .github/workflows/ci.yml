@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with the CLI the apps are authored against (docs/README.md
+  # records the vendored skill-data version).
+  NATIVE_CLI_VERSION: "0.11.0"
+
+jobs:
+  verify:
+    name: Tests and markup checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the Native SDK CLI
+        run: npm install -g "@native-sdk/cli@$NATIVE_CLI_VERSION"
+      - name: Cache the Zig toolchain and compiler cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.native/toolchains
+            ~/.cache/zig
+          key: native-${{ runner.os }}-${{ env.NATIVE_CLI_VERSION }}
+      - name: Run every app's tests and checks
+        run: bash scripts/verify-all.sh
+
+  smoke:
+    name: Automation smoke (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [counter, effects, kanban, charts, stream, images, gallery, desktop]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the Native SDK CLI
+        run: npm install -g "@native-sdk/cli@$NATIVE_CLI_VERSION"
+      - name: Install GTK and Xvfb
+        # No WebKitGTK dev package: these apps declare no web use, so their
+        # Linux host compiles without the embedded web layer.
+        run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev xvfb
+      - name: Cache the Zig toolchain and compiler cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.native/toolchains
+            ~/.cache/zig
+          key: native-${{ runner.os }}-${{ env.NATIVE_CLI_VERSION }}
+      - name: Build with automation and drive the app headless
+        run: |
+          set -euo pipefail
+          cd "apps/${{ matrix.app }}"
+          native build -Dautomation=true --yes
+          rm -rf .zig-cache/native-sdk-automation
+          xvfb-run -a "./zig-out/bin/${{ matrix.app }}" &
+          pid=$!
+          trap 'kill "$pid" >/dev/null 2>&1 || true; pkill -x "${{ matrix.app }}" >/dev/null 2>&1 || true' EXIT
+          native automate wait
+          native automate assert 'gpu_nonblank=true'
+          native automate screenshot main-canvas
+          test -s .zig-cache/native-sdk-automation/screenshot-main-canvas.png

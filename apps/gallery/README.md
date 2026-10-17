@@ -1,5 +1,7 @@
 # Gallery
 
+![Gallery app screenshot](../../docs/screenshots/gallery.png)
+
 A native-rendered Native SDK app: the view lives in `src/app.native`
 (declarative markup) and the logic in `src/main.zig` (`Model`, `Msg`,
 `update`). No WebView, no npm, no build files — the `native` CLI owns

@@ -1,5 +1,7 @@
 # Kanban
 
+![Kanban app screenshot](../../docs/screenshots/kanban.png)
+
 A four-column board where every card is a drag source. The `on-drag`
 binding delivers one closed record on release - the card's authored
 identity plus live view geometry (`phase`, `x`, `y`, `viewWidth`,

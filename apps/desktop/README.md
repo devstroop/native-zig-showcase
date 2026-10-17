@@ -1,5 +1,7 @@
 # Desktop
 
+![Desktop app screenshot](../../docs/screenshots/desktop.png)
+
 Multi-window desktop integration, all in the app-model loop: secondary
 windows **are model state**. `windows_fn` returns the descriptors that
 should exist right now — presence is liveness — and the runtime

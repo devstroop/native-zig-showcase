@@ -1,5 +1,7 @@
 # Stream
 
+![Stream app screenshot](../../docs/screenshots/stream.png)
+
 A hundred-thousand-event telemetry feed rendered through **one
 windowed virtual list**. The runtime owns the viewport math (retained
 scroll offset + viewport → visible index range), the model owns the

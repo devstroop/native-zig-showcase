@@ -1,5 +1,7 @@
 # Effects
 
+![Effects app screenshot](../../docs/screenshots/effects.png)
+
 The effects-channel tour: subprocesses streaming line by line, collected
 stdout with the stderr tail, HTTP fetches (good host, unreachable host,
 cancel), a note persisted under the app's own data directory, the system

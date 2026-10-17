@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NATIVE_CLI_VERSION: "0.11.0"
+
+jobs:
+  build:
+    name: Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64-linux
+          - os: macos-14
+            arch: aarch64-macos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the Native SDK CLI
+        run: npm install -g "@native-sdk/cli@$NATIVE_CLI_VERSION"
+      - name: Install GTK and Xvfb
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev xvfb
+      - name: Cache the Zig toolchain and compiler cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.native/toolchains
+            ~/.cache/zig
+          key: native-${{ runner.os }}-${{ env.NATIVE_CLI_VERSION }}
+      - name: Build every app in ReleaseFast
+        run: bash scripts/build-all.sh
+      - name: Package the binaries
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for app in apps/*/; do
+            name="$(basename "$app")"
+            tar -czf "dist/${name}-${{ matrix.arch }}.tar.gz" -C "$app/zig-out/bin" "$name"
+          done
+          if command -v sha256sum >/dev/null 2>&1; then
+            (cd dist && sha256sum ./*.tar.gz) > "dist/SHA256SUMS-${{ matrix.arch }}.txt"
+          else
+            (cd dist && shasum -a 256 ./*.tar.gz) > "dist/SHA256SUMS-${{ matrix.arch }}.txt"
+          fi
+      - name: Upload the packaged apps
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.arch }}
+          path: dist/*
+
+  release:
+    name: Publish the GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the packaged apps
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create the release with its assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes

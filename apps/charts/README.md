@@ -1,5 +1,7 @@
 # Charts
 
+![Charts app screenshot](../../docs/screenshots/charts.png)
+
 A live metrics dashboard: one effects-channel timer appends a sample to
 two rings every 200ms, and every chart on the screen is a pure binding
 over that state.

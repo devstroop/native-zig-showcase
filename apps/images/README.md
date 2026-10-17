@@ -1,5 +1,7 @@
 # Images
 
+![Images app screenshot](../../docs/screenshots/images.png)
+
 The **image registry** end to end, entirely from `update` — no asset
 pipeline, no view-layer file loading:
 
