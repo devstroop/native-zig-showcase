@@ -45,6 +45,13 @@ native check   # validate markup, bindings, and manifest
 native build   # ReleaseFast binary in zig-out/bin/
 ```
 
+Repo-wide helpers:
+
+```sh
+scripts/verify-all.sh   # native test + native check for every app
+scripts/build-all.sh    # ReleaseFast build of every app
+```
+
 Note: `native dev` runs a Debug build, which is fine for editing but
 noticeably slower at painting than the ReleaseFast binary from
 `native build` — use `native build` (or `native dev` only for markup
@@ -57,5 +64,6 @@ native-zig-showcase/
 ├── README.md            # this file
 ├── FEATURES.md          # feature-to-app coverage map
 ├── docs/                # vendored SDK reference guides
+├── scripts/             # repo-wide verify/build helpers
 └── apps/                # one Native SDK app per directory
 ```
