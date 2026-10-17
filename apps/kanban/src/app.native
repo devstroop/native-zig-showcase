@@ -1,0 +1,63 @@
+<!-- The board: four columns, each a `for` over a derived card list, and
+     every card a drag source. `on-drag="card_dropped:{c.id}"` authors the
+     card's identity; the runtime fills phase, point, and view size, so a
+     drop is one Msg that update() resolves to a column. -->
+<column gap="12" padding="16" grow="1">
+  <row gap="8" cross="center">
+    <text size="heading" grow="1">Kanban</text>
+    <text foreground="text_muted">drag a card into any column</text>
+  </row>
+  <text wrap="true" foreground="text_muted">Every card is a drag source. on-drag delivers one closed release record - the authored card identity plus live view geometry - and update() maps the drop point's x to a column. The board is rebuilt from the model; the view holds no drag state.</text>
+
+  <row gap="12" grow="1" cross="start">
+    <column background="surface" radius="md" padding="12" gap="8" grow="1">
+      <row gap="8" cross="center">
+        <text size="lg" grow="1">Backlog</text>
+        <text size="sm" foreground="text_muted">{backlog_count}</text>
+      </row>
+      <for each="backlog_cards" key="id" as="c">
+        <panel label="{c.title}" on-drag="card_dropped:{c.id}" background="surface_subtle" radius="sm" padding="10">
+          <text size="sm">{c.title}</text>
+        </panel>
+      </for>
+    </column>
+
+    <column background="surface" radius="md" padding="12" gap="8" grow="1">
+      <row gap="8" cross="center">
+        <text size="lg" grow="1">Todo</text>
+        <text size="sm" foreground="text_muted">{todo_count}</text>
+      </row>
+      <for each="todo_cards" key="id" as="c">
+        <panel label="{c.title}" on-drag="card_dropped:{c.id}" background="surface_subtle" radius="sm" padding="10">
+          <text size="sm">{c.title}</text>
+        </panel>
+      </for>
+    </column>
+
+    <column background="surface" radius="md" padding="12" gap="8" grow="1">
+      <row gap="8" cross="center">
+        <text size="lg" grow="1">Doing</text>
+        <text size="sm" foreground="text_muted">{doing_count}</text>
+      </row>
+      <for each="doing_cards" key="id" as="c">
+        <panel label="{c.title}" on-drag="card_dropped:{c.id}" background="surface_subtle" radius="sm" padding="10">
+          <text size="sm">{c.title}</text>
+        </panel>
+      </for>
+    </column>
+
+    <column background="surface" radius="md" padding="12" gap="8" grow="1">
+      <row gap="8" cross="center">
+        <text size="lg" grow="1">Done</text>
+        <text size="sm" foreground="text_muted">{done_count}</text>
+      </row>
+      <for each="done_cards" key="id" as="c">
+        <panel label="{c.title}" on-drag="card_dropped:{c.id}" background="surface_subtle" radius="sm" padding="10">
+          <text size="sm">{c.title}</text>
+        </panel>
+      </for>
+    </column>
+  </row>
+
+  <status-bar>{drag_status}</status-bar>
+</column>
