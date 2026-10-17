@@ -1,0 +1,43 @@
+<!-- The control room for the declared windows: every button is one Msg,
+     and the runtime reconciles the OS windows against windows_fn after
+     every dispatch. The status line narrates the window set, which is
+     rebuilt from the model like everything else. -->
+<column gap="16" padding="24" grow="1">
+  <row gap="10" cross="center">
+    <text size="heading">Desktop</text>
+    <text grow="1" foreground="text_muted">secondary windows are model state - presence in windows_fn is liveness</text>
+    <badge>{pings} pings</badge>
+  </row>
+
+  <text wrap="true" foreground="text_muted">Open windows from here: opening sets a flag, closing clears it, and the runtime creates or closes the real OS windows to match. Window verbs (minimize, hide, show, quit) ride the effects channel; the user's own titlebar X comes back as a Msg. One model, every window rebuilt on every dispatch - press Ping and watch both windows agree.</text>
+
+  <row gap="12" grow="1" cross="start">
+    <panel grow="1" background="surface" radius="md" padding="16">
+      <column gap="10">
+        <text size="lg">Inspector</text>
+        <text size="sm" wrap="true" foreground="text_muted">A .quit window: its titlebar X dispatches inspector_closed, the model drops the declaration, and the runtime closes it. Closing from here is the same declarative path.</text>
+        <button on-press="open_inspector">Open inspector</button>
+        <button variant="secondary" on-press="minimize_inspector">Minimize it</button>
+        <button variant="secondary" on-press="close_inspector">Close it</button>
+      </column>
+    </panel>
+
+    <panel grow="1" background="surface" radius="md" padding="16">
+      <column gap="10">
+        <text size="lg">Scratchpad</text>
+        <text size="sm" wrap="true" foreground="text_muted">close_policy = .hide on macOS: the titlebar X keeps the window (and its views) for Show. Hosts that refuse the policy close it declaratively instead. Hide and Show below ride the effects channel either way.</text>
+        <button on-press="open_scratchpad">Open scratchpad</button>
+        <button variant="secondary" on-press="hide_scratchpad">Hide it</button>
+        <button variant="secondary" on-press="show_scratchpad">Show it</button>
+      </column>
+    </panel>
+  </row>
+
+  <row gap="10" cross="center">
+    <button on-press="ping">Ping every window</button>
+    <text grow="1" foreground="text_muted">the ping counter lives in one model - each window's tree is a projection of it</text>
+    <button size="sm" variant="secondary" on-press="quit_app">Quit the app</button>
+  </row>
+
+  <status-bar>{status}</status-bar>
+</column>

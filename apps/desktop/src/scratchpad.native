@@ -1,0 +1,14 @@
+<!-- The scratchpad window's tree. Its descriptor carries
+     close_policy = .hide where the host supports it, so the titlebar X
+     keeps the native identity and these views alive for Show; hosts
+     that refuse the policy close it declaratively instead. The
+     Hide/Show buttons always ride the effects channel. -->
+<column gap="12" padding="16" grow="1">
+  <text size="heading">Scratchpad</text>
+  <text>{pings} pings so far - hiding never destroyed this window</text>
+  <text wrap="true" foreground="text_muted">This window survives a .hide because the model keeps declaring it. Its pings ride the same model as the inspector and the main canvas.</text>
+  <row gap="8" cross="center">
+    <button on-press="ping">Ping from the scratchpad</button>
+    <button variant="secondary" on-press="hide_scratchpad">Hide me</button>
+  </row>
+</column>

@@ -18,10 +18,8 @@ and run entirely by the `native` CLI.
 | `apps/effects` | The effects channel: subprocesses, HTTP, files, clipboard, notifications |
 | `apps/kanban` | Drag and drop: the `on-drag` release record drives a reorderable board |
 | `apps/charts` | Data visualization: line, area, bar, and sparkline series over a live effects-channel timer |
+| `apps/desktop` | Multi-window: model-declared secondary windows, window verbs (close/minimize/hide/show/quit), close policies |
 | `apps/gallery` | ★ The flagship — all ~50 elements, layout, theming, gestures, with self-documenting markup |
-
-The showcase is growing: multi-window desktop integration is on the
-roadmap.
 
 ## Getting started
 

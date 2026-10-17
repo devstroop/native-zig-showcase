@@ -1,0 +1,13 @@
+<!-- The inspector window's tree: a CompiledMarkupView the app's
+     window_view builds for the "inspector" descriptor. It binds the
+     same model as the main canvas - the ping counter rides both. -->
+<column gap="12" padding="16" grow="1">
+  <text size="heading">Inspector</text>
+  <text>{pings} pings so far</text>
+  <text wrap="true" foreground="text_muted">This window is declared by windows_fn while inspector_open holds. Every Msg rebuilds every open window from the one model, so a ping from here lands in the main canvas's badge too.</text>
+  <row gap="8" grow="1" cross="end">
+    <button on-press="ping">Ping from the inspector</button>
+    <button variant="secondary" on-press="close_inspector">Close me</button>
+  </row>
+  <status-bar>{status}</status-bar>
+</column>
