@@ -1,0 +1,64 @@
+<!-- The dashboard: every chart is a projection of the same two sample
+     rings in main.zig. The "Live" switch starts a repeating 200ms timer
+     on the effects channel; each tick appends one sample and the next
+     frame redraws. "Regenerate" refills the ring deterministically. -->
+<column gap="14" padding="20" grow="1">
+  <row gap="10" cross="center">
+    <text size="heading">Live metrics</text>
+    <text grow="1" foreground="text_muted">samples from a seeded generator - the charts are pure bindings over the ring</text>
+    <switch checked="{running}" on-toggle="toggle_running">Live</switch>
+    <button size="sm" variant="secondary" on-press="regenerate">Regenerate</button>
+    <badge>{sample_count} samples</badge>
+  </row>
+
+  <row gap="10">
+    <column grow="1" background="surface" radius="md" padding="12" gap="2">
+      <text size="sm" foreground="text_muted">Current load</text>
+      <text size="lg">{current_text}</text>
+    </column>
+    <column grow="1" background="surface" radius="md" padding="12" gap="2">
+      <text size="sm" foreground="text_muted">Peak load</text>
+      <text size="lg">{peak_text}</text>
+    </column>
+    <column grow="1" background="surface" radius="md" padding="12" gap="2">
+      <text size="sm" foreground="text_muted">Mean load</text>
+      <text size="lg">{mean_text}</text>
+    </column>
+    <column grow="1" background="surface" radius="md" padding="12" gap="2">
+      <text size="sm" foreground="text_muted">Window</text>
+      <text size="lg">{sample_count} / 48</text>
+    </column>
+  </row>
+
+  <panel background="surface" radius="md" padding="14">
+    <column gap="8">
+      <text size="lg">Requests and error spikes</text>
+      <chart height="210" y-min="0" y-max="100" grid-lines="3" y-labels baseline label="Requests and errors per sample">
+        <series values="{request_series}" kind="line" color="accent" label="Requests"/>
+        <series values="{error_series}" kind="area" color="destructive" label="Errors"/>
+      </chart>
+    </column>
+  </panel>
+
+  <row gap="10" grow="1">
+    <panel grow="2" background="surface" radius="md" padding="14">
+      <column gap="8">
+        <text size="lg">Load histogram</text>
+        <chart grow="1" y-min="0" grid-lines="2" y-labels x-labels="{bucket_labels}" label="Samples per load bucket">
+          <series values="{histogram}" kind="bar" color="info" label="Samples"/>
+        </chart>
+      </column>
+    </panel>
+    <panel grow="1" background="surface" radius="md" padding="14">
+      <column gap="8">
+        <text size="lg">Requests sparkline</text>
+        <chart grow="1" y-min="0" y-max="100" grid-lines="2" label="Requests sparkline">
+          <series values="{request_series}" kind="line" color="accent" label="Requests"/>
+        </chart>
+        <text size="sm" foreground="text_muted">error series rides the filled area - spikes only when the generator draws high noise</text>
+      </column>
+    </panel>
+  </row>
+
+  <status-bar>{live_status}</status-bar>
+</column>

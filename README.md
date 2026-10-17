@@ -17,10 +17,11 @@ and run entirely by the `native` CLI.
 | `apps/counter` | The app-model loop: state, messages, effects (timer, clock) |
 | `apps/effects` | The effects channel: subprocesses, HTTP, files, clipboard, notifications |
 | `apps/kanban` | Drag and drop: the `on-drag` release record drives a reorderable board |
+| `apps/charts` | Data visualization: line, area, bar, and sparkline series over a live effects-channel timer |
 | `apps/gallery` | ★ The flagship — all ~50 elements, layout, theming, gestures, with self-documenting markup |
 
-The showcase is growing: a charts dashboard and multi-window desktop
-integration are on the roadmap.
+The showcase is growing: multi-window desktop integration is on the
+roadmap.
 
 ## Getting started
 
