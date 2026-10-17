@@ -1,0 +1,36 @@
+<!-- The feed: one windowed virtual list over the whole corpus.
+     `<virtual-window>` resolves the retained scroll offset + viewport
+     into a visible range before rendering; `<virtual-list>` asks the
+     model's `rows` query for exactly that range; `on-reach-end`
+     appends the next batch (one Msg per approach, hysteresis built
+     into the engine). The status bar reads the SAME range binding, so
+     the footer narrates the live window without any scroll state in
+     the model. -->
+<column gap="12" padding="18" grow="1">
+  <row gap="10" cross="center">
+    <text size="heading">Event stream</text>
+    <text grow="1" foreground="text_muted">one windowed virtual list over 100,000 events - only the visible slice is ever built</text>
+    <badge>{loaded_text}</badge>
+  </row>
+
+  <virtual-window id="stream" as="range" item-count="{loaded}" item-extent="44" overscan="6" viewport-fallback="900">
+    <column grow="1" gap="0">
+      <virtual-list window="range" each="rows" as="row" grow="1" label="Event stream" on-reach-end="load_more">
+        <list-item key="{row.index}" label="{row.detail}" selected="{row.index == selected}" on-press="select:{row.index}">
+          <row gap="12" cross="center" grow="1">
+            <text width="104" foreground="text_muted">{row.time}</text>
+            <if test="{row.trouble}">
+              <text width="52" foreground="destructive">{row.level}</text>
+            </if>
+            <else>
+              <text width="52" foreground="text_muted">{row.level}</text>
+            </else>
+            <text width="104">{row.source}</text>
+            <text grow="1" wrap="false">{row.detail}</text>
+          </row>
+        </list-item>
+      </virtual-list>
+      <status-bar>rows {range.first_visible_index}-{range.last_visible_index} of {loaded} - selected {selected_text}</status-bar>
+    </column>
+  </virtual-window>
+</column>

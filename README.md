@@ -18,6 +18,8 @@ and run entirely by the `native` CLI.
 | `apps/effects` | The effects channel: subprocesses, HTTP, files, clipboard, notifications |
 | `apps/kanban` | Drag and drop: the `on-drag` release record drives a reorderable board |
 | `apps/charts` | Data visualization: line, area, bar, and sparkline series over a live effects-channel timer |
+| `apps/stream` | Windowed virtual lists: a 100,000-event feed where only the visible slice is ever built |
+| `apps/images` | The image registry: raw RGBA atlases and decoded PNG bytes bound as model-owned ids |
 | `apps/desktop` | Multi-window: model-declared secondary windows, window verbs (close/minimize/hide/show/quit), close policies |
 | `apps/gallery` | ★ The flagship — all ~50 elements, layout, theming, gestures, with self-documenting markup |
 
