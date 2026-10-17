@@ -21,6 +21,12 @@ and run entirely by the `native` CLI.
 | `apps/desktop` | Multi-window: model-declared secondary windows, window verbs (close/minimize/hide/show/quit), close policies |
 | `apps/gallery` | ★ The flagship — all ~50 elements, layout, theming, gestures, with self-documenting markup |
 
+## Docs
+
+- `FEATURES.md` — which SDK surface is demonstrated where
+- `docs/` — vendored Native SDK reference guides (checkout-readable
+  without the SDK installed)
+
 ## Getting started
 
 Install the Native SDK CLI (`native`), then start with the gallery:
@@ -49,5 +55,7 @@ iteration) when testing how an app actually feels.
 ```
 native-zig-showcase/
 ├── README.md            # this file
+├── FEATURES.md          # feature-to-app coverage map
+├── docs/                # vendored SDK reference guides
 └── apps/                # one Native SDK app per directory
 ```
