@@ -15,11 +15,11 @@ and run entirely by the `native` CLI.
 | App | What it demonstrates |
 |---|---|
 | `apps/counter` | The app-model loop: state, messages, effects (timer, clock) |
+| `apps/effects` | The effects channel: subprocesses, HTTP, files, clipboard, notifications |
 | `apps/gallery` | ★ The flagship — all ~50 elements, layout, theming, gestures, with self-documenting markup |
 
-The showcase is growing: focused demos for subprocesses/HTTP/files,
-drag-and-drop kanban, a charts dashboard, and multi-window desktop
-integration are on the roadmap.
+The showcase is growing: focused demos for drag-and-drop kanban, a charts
+dashboard, and multi-window desktop integration are on the roadmap.
 
 ## Getting started
 

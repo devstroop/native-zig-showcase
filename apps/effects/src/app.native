@@ -1,0 +1,113 @@
+<!-- The view: five cards, one per effects-channel capability. Every
+     control dispatches a Msg that update() turns into an effect; every
+     result arrives back as a Msg from the host's drain. Fields bind by
+     the names main.zig wrote; phase names and logs are derived by bound
+     fns. Validate with: native check -->
+<column gap="12" padding="16" grow="1">
+  <row gap="8" cross="center">
+    <text size="heading" grow="1">Effects</text>
+    <if test="{notify_count == 1}">
+      <badge>1 notification</badge>
+    </if>
+    <if test="{notify_count >= 2}">
+      <badge>{notify_count} notifications</badge>
+    </if>
+    <button size="sm" on-press="notify">Notify</button>
+  </row>
+  <text wrap="true" foreground="text_muted">update() stays a plain function of model + message: subprocesses, HTTP, files, the clipboard, and notifications all leave through the effects channel and come back as ordinary Msgs. Tests swap in a fake executor; this window talks to the OS.</text>
+
+  <scroll grow="1">
+    <column gap="12">
+
+      <column background="surface" radius="md" padding="16" gap="8">
+        <row gap="8" cross="center">
+          <text size="lg" grow="1">Subprocess - streaming stdout</text>
+          <button size="sm" variant="secondary" on-press="stream_cancel">Cancel</button>
+          <button size="sm" on-press="stream_start">Run</button>
+        </row>
+        <row gap="8" cross="center">
+          <text>stream: {stream_phase_name}</text>
+          <text foreground="text_muted">{stream_count} lines</text>
+          <if test="{stream_phase == 2}">
+            <text foreground="text_muted">exit code {stream_code}</text>
+          </if>
+        </row>
+        <list gap="2">
+          <for each="stream_log" key="id" as="l">
+            <list-item icon="file-text">{l.title}</list-item>
+          </for>
+        </list>
+      </column>
+
+      <column background="surface" radius="md" padding="16" gap="8">
+        <row gap="8" cross="center">
+          <text size="lg" grow="1">Subprocess - collected stdout and stderr tail</text>
+          <button size="sm" variant="secondary" on-press="collect_cancel">Cancel</button>
+          <button size="sm" on-press="collect_start">Run</button>
+        </row>
+        <row gap="8" cross="center">
+          <text>collect: {collect_phase_name}</text>
+          <if test="{collect_phase == 2}">
+            <text foreground="text_muted">exit code {collect_code}</text>
+          </if>
+        </row>
+        <text foreground="text_muted">stdout ({collect_out_len} bytes):</text>
+        <text wrap="true">{collect_stdout}</text>
+        <if test="{collect_out_truncated}">
+          <text foreground="text_muted">output longer than the display buffer - truncated</text>
+        </if>
+        <text foreground="text_muted">stderr tail ({collect_err_len} bytes):</text>
+        <text wrap="true">{collect_stderr}</text>
+      </column>
+
+      <column background="surface" radius="md" padding="16" gap="8">
+        <row gap="8" cross="center">
+          <text size="lg" grow="1">HTTP fetch</text>
+          <button size="sm" variant="secondary" on-press="fetch_cancel">Cancel</button>
+          <button size="sm" variant="secondary" on-press="fetch_bad">Bad host</button>
+          <button size="sm" on-press="fetch_start">Fetch example.com</button>
+        </row>
+        <row gap="8" cross="center">
+          <text>fetch: {fetch_phase_name}</text>
+          <if test="{fetch_phase == 2}">
+            <text foreground="text_muted">HTTP {fetch_status} - {fetch_body_len} bytes</text>
+          </if>
+        </row>
+        <text wrap="true" foreground="text_muted">{fetch_body_text}</text>
+        <if test="{fetch_body_truncated}">
+          <text foreground="text_muted">body longer than the preview buffer - truncated</text>
+        </if>
+      </column>
+
+      <column background="surface" radius="md" padding="16" gap="8">
+        <text size="lg">Files - a note in the app data directory</text>
+        <row gap="8" cross="center">
+          <text>note: {note_phase_name}</text>
+          <text foreground="text_muted">{note_bytes} bytes</text>
+          <if test="{note_truncated}">
+            <text foreground="text_muted">truncated</text>
+          </if>
+        </row>
+        <row gap="8" cross="center">
+          <text-field text="{note}" placeholder="Type a note…" on-input="note_input" on-submit="note_save" grow="1"/>
+          <button size="sm" variant="secondary" on-press="note_load">Reload</button>
+          <button size="sm" on-press="note_save">Save</button>
+        </row>
+        <text wrap="true" foreground="text_muted">Save writes through the effects channel into the app's own data root - an in-root path, so the sandbox opens it without a filesystem grant. The first read happens in init_fx, before the first paint.</text>
+      </column>
+
+      <column background="surface" radius="md" padding="16" gap="8">
+        <row gap="8" cross="center">
+          <text size="lg" grow="1">Clipboard</text>
+          <button size="sm" variant="secondary" on-press="clip_paste">Paste</button>
+          <button size="sm" on-press="clip_copy">Copy summary</button>
+        </row>
+        <text>clipboard: {clip_phase_name} - {clip_bytes} bytes</text>
+        <text wrap="true" foreground="text_muted">{clipboard_text}</text>
+      </column>
+
+    </column>
+  </scroll>
+
+  <status-bar>{stream_phase_name} - {fetch_phase_name} - {note_phase_name} - {clip_phase_name}</status-bar>
+</column>
