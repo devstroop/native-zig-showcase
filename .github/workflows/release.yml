@@ -10,7 +10,15 @@ permissions:
   contents: write
 
 env:
-  NATIVE_CLI_VERSION: "0.11.0"
+  # The SDK release the apps are authored against. The CLI is built from
+  # this tag because the published npm tarball ships without the SDK's
+  # tests/ fixtures that `native test` compiles, while a source checkout
+  # carries them.
+  NATIVE_SDK_TAG: v0.11.0
+  # The Zig version the SDK pins (src/tooling/toolchain.zig
+  # pinned_zig_version); the CLI rejects any other minor version. 0.17
+  # does not build this SDK (verified: `zig build` fails to parse it).
+  NATIVE_ZIG_VERSION: "0.16.0"
 
 jobs:
   build:
@@ -26,21 +34,35 @@ jobs:
             arch: aarch64-macos
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Set up Zig
+        uses: vercel-labs/setup-zig@v1
         with:
-          node-version: 22
-      - name: Install the Native SDK CLI
-        run: npm install -g "@native-sdk/cli@$NATIVE_CLI_VERSION"
+          version: ${{ env.NATIVE_ZIG_VERSION }}
       - name: Install GTK and Xvfb
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev xvfb
-      - name: Cache the Zig toolchain and compiler cache
+      - name: Restore the Native SDK checkout
+        id: sdk
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.native/toolchains
-            ~/.cache/zig
-          key: native-${{ runner.os }}-${{ env.NATIVE_CLI_VERSION }}
+          path: ~/native-sdk
+          key: native-sdk-${{ runner.os }}-${{ env.NATIVE_SDK_TAG }}-zig${{ env.NATIVE_ZIG_VERSION }}-b1
+      - name: Fetch and build the SDK CLI
+        if: steps.sdk.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "$NATIVE_SDK_TAG" https://github.com/vercel-labs/native.git "$HOME/native-sdk"
+          cd "$HOME/native-sdk"
+          zig build -Doptimize=ReleaseFast
+      - name: Put the SDK CLI on PATH
+        run: |
+          test -x "$HOME/native-sdk/zig-out/bin/native"
+          echo "$HOME/native-sdk/zig-out/bin" >> "$GITHUB_PATH"
+      - name: Cache the Zig compiler cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/zig
+          key: zig-cache-${{ runner.os }}-${{ env.NATIVE_SDK_TAG }}-zig${{ env.NATIVE_ZIG_VERSION }}
       - name: Build every app in ReleaseFast
         run: bash scripts/build-all.sh
       - name: Package the binaries
