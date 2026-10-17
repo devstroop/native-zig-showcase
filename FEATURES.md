@@ -12,6 +12,8 @@ element reference.
 | `Model` / `Msg` / `update` loop with a typed Msg union | every app (`src/main.zig`) |
 | Derived bindings — model functions the view calls per rebuild (counts, sums, formatted strings) | `counter` (`total`), `charts` (stat tiles), `gallery` (`section_title`, log rows) |
 | Arena-derived methods returning slices (`fn (model, arena) []const …`) | `charts` (`request_series`), `gallery`, `effects` |
+| Windowed virtual-list rows query — `fn (model, range, arena) []const Row` returning exactly the visible slice | `stream` |
+| Boot-time effects through `Options.on_lifecycle` (`.start` → Msg before the first frame) | `images` |
 | `view_unbound` — the lint opt-out for state markup sees only through derived methods | all apps |
 | No view state: the board rebuilds from the model on every drop | `kanban` |
 | Replayable model math — one sample is a pure function of model fields | `charts` |
@@ -27,6 +29,7 @@ element reference.
 | File persistence under the app's data directory | `effects` |
 | System clipboard | `effects` |
 | Fire-and-forget notification | `effects` |
+| Image registry: `registerImage` (raw RGBA atlas), `registerImageBytes` (platform decode), `unregisterImage` | `images` |
 | Fake executor in tests — operations recorded, results fed back as plain Msgs | `counter`, `effects`, `charts`, `desktop` |
 
 ## View tier (Native markup)
@@ -41,6 +44,8 @@ element reference.
 | Markdown and inline code | `gallery` (rich content) |
 | Theming and style tokens | `gallery` (theming section) |
 | Text input: `text-field` / `textarea` / `search-field` with `on-input` on a model `TextBuffer` | `effects`, `gallery` (controls section) |
+| Windowed virtual lists: `<virtual-window>` + `<virtual-list>` (uniform extent, overscan, `on-reach-end` infinite fetch, live `range.*` bindings) | `stream` |
+| Images: `<image>` / `<avatar>` bound to model-owned registry ids, with the `0` sentinel fallback | `images` |
 
 ## Desktop integration
 
@@ -62,4 +67,5 @@ element reference.
 | Markup + manifest validation (`native check`) | every app |
 | Deterministic data assertions against a fake timer | `charts`, `counter` |
 | Window liveness, verb mirror (`windowActionState`), tree bindings | `desktop` |
+| Image registry double via `bindImages` (recorded register/unregister calls, failure fallback) | `images` |
 | Live verification: snapshots, widget clicks, screenshots (`native automate`) | all apps were verified live; see `docs/sdk/automation/` |

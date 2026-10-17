@@ -1,0 +1,46 @@
+<!-- The registry narrated: boot (lifecycle .start) registers the
+     bundled PNG bytes and the first generated atlas, both ids landing
+     in the model only on success. `0` is the no-image sentinel: the
+     atlas pane falls back to the empty state, the avatar to its
+     initials. Clear unregisters; Regenerate swaps in a fresh id. -->
+<column gap="12" padding="18" grow="1">
+  <row gap="10" cross="center">
+    <text size="heading">Image registry</text>
+    <text grow="1" foreground="text_muted">raw RGBA atlases and decoded PNG bytes, registered through the effects channel</text>
+    <badge>generation {generation}</badge>
+  </row>
+
+  <row gap="10">
+    <button label="Regenerate the atlas" on-press="regenerate">Regenerate</button>
+    <button label="Clear the atlas" on-press="clear">Clear</button>
+  </row>
+
+  <row gap="12" grow="1">
+    <panel grow="1">
+      <column gap="10" padding="14" grow="1">
+        <text><span weight="bold">Generated atlas</span></text>
+        <text foreground="text_muted">fx.registerImage - raw straight-alpha RGBA8, generated in update</text>
+        <if test="{atlas_ready}">
+          <image image="{atlas_id}" width="192" height="192" label="Generated atlas" />
+        </if>
+        <else>
+          <text foreground="text_muted">no atlas registered - press Regenerate</text>
+        </else>
+      </column>
+    </panel>
+
+    <panel grow="1">
+      <column gap="10" padding="14" grow="1">
+        <text><span weight="bold">Encoded PNG bytes</span></text>
+        <text foreground="text_muted">fx.registerImageBytes - src/bundled_badge.png decoded by the platform codec</text>
+        <row gap="12" cross="center">
+          <avatar image="{icon_id}" label="Bundled icon avatar">NS</avatar>
+          <image image="{icon_id}" width="96" height="96" label="Bundled icon" />
+        </row>
+        <text foreground="text_muted">id 0 keeps the initials fallback visible</text>
+      </column>
+    </panel>
+  </row>
+
+  <status-bar>{status_text}</status-bar>
+</column>
