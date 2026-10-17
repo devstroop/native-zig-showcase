@@ -44,6 +44,8 @@ element reference.
 | Markdown and inline code | `gallery` (rich content) |
 | Theming and style tokens | `gallery` (theming section) |
 | Text input: `text-field` / `textarea` / `search-field` with `on-input` on a model `TextBuffer` | `effects`, `gallery` (controls section) |
+| The bare `input` leaf, the `combobox` (filtered model-owned dropdown), and the `input-group` composer with its actions row | `gallery` (controls section) |
+| Disclosure and stacking: `accordion` (header via `text`, children gated by `selected`) and the `card` stacking container | `gallery` (layout section) |
 | Windowed virtual lists: `<virtual-window>` + `<virtual-list>` (uniform extent, overscan, `on-reach-end` infinite fetch, live `range.*` bindings) | `stream` |
 | Images: `<image>` / `<avatar>` bound to model-owned registry ids, with the `0` sentinel fallback | `images` |
 
