@@ -1,9 +1,12 @@
 <!-- The control room for the declared windows: every button is one Msg,
      and the runtime reconciles the OS windows against windows_fn after
      every dispatch. The status line narrates the window set, which is
-     rebuilt from the model like everything else. -->
+     rebuilt from the model like everything else. The header doubles as
+     the titlebar: it is the window-drag region (titlebar = .hidden_inset),
+     leading-inset padded so the macOS traffic lights never overlap it. -->
 <column gap="16" padding="24" grow="1">
-  <row gap="10" cross="center">
+  <row gap="10" cross="center" window-drag="true" height="{header_height}">
+    <spacer width="{chrome_leading}"/>
     <text size="heading">Desktop</text>
     <text grow="1" foreground="text_muted">secondary windows are model state - presence in windows_fn is liveness</text>
     <badge>{pings} pings</badge>

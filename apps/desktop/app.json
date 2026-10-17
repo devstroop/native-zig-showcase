@@ -16,6 +16,7 @@
                 "title": "Desktop",
                 "width": 900,
                 "height": 640,
+                "titlebar": "hidden_inset",
                 "views": [
                     { "label": "main-canvas", "kind": "gpu_surface", "fill": true, "role": "Desktop canvas", "accessibility_label": "Desktop", "gpu_backend": "metal", "gpu_pixel_format": "bgra8_unorm", "gpu_present_mode": "timer", "gpu_alpha_mode": "opaque", "gpu_color_space": "srgb", "gpu_vsync": true }
                 ]

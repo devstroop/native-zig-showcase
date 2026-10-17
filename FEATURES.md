@@ -58,6 +58,7 @@ element reference.
 | User close as an ordinary Msg: each descriptor's `on_close` | `desktop` |
 | One shared model across main + secondary windows | `desktop` |
 | `restore_policy = .center_on_primary`, `min_width` / `min_height` floors | `desktop` |
+| Hidden titlebar (`titlebar = .hidden_inset`), the `window-drag` header region, and the `on_chrome` overlay-geometry channel | `desktop` |
 
 ## Verification
 

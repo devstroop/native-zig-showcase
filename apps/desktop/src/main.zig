@@ -38,6 +38,7 @@ const shell_windows = [_]native_sdk.ShellWindow{.{
     .width = window_width,
     .height = window_height,
     .views = &shell_views,
+    .titlebar = .hidden_inset,
 }};
 const shell_scene: native_sdk.ShellConfig = .{ .windows = &shell_windows };
 
@@ -54,22 +55,38 @@ pub const Msg = union(enum) {
     quit_app,
     inspector_closed,
     scratchpad_closed,
+    /// The hidden-titlebar chrome channel: overlay geometry (titlebar
+    /// band, control cluster) delivered before the first build and on
+    /// every change. All-zero on standard-chrome hosts like Linux.
+    chrome_changed: native_sdk.platform.WindowChrome,
 
     /// `inspector_closed`/`scratchpad_closed` are dispatched by the
     /// descriptors' `on_close` when the user hits a window's own close
-    /// affordance - never from markup.
-    pub const view_unbound = .{ "inspector_closed", "scratchpad_closed" };
+    /// affordance, and `chrome_changed` by `Options.on_chrome` - never
+    /// from markup.
+    pub const view_unbound = .{ "inspector_closed", "scratchpad_closed", "chrome_changed" };
 };
 
 pub const Model = struct {
     /// Open flags and the narration string are consumed through the
-    /// derived methods below and `windows_fn`.
-    pub const view_unbound = .{ "inspector_open", "scratch_open", "last_action" };
+    /// derived methods below and `windows_fn`; chrome_top feeds the
+    /// header-height derived method.
+    pub const view_unbound = .{ "inspector_open", "scratch_open", "last_action", "chrome_top" };
 
     inspector_open: bool = false,
     scratch_open: bool = false,
     pings: i64 = 0,
     last_action: []const u8 = "nothing yet - open a window",
+    /// Hidden-titlebar overlay geometry: the leading band clears the
+    /// traffic lights (macOS), the top band sizes the drag header.
+    chrome_leading: f32 = 0,
+    chrome_top: f32 = 0,
+
+    /// The header stands in for the titlebar: at least its natural
+    /// height, the band's height when the host reports one.
+    pub fn header_height(model: *const Model) f32 {
+        return @max(36, model.chrome_top);
+    }
 
     pub fn status(model: *const Model, arena: std.mem.Allocator) []const u8 {
         return std.fmt.allocPrint(arena, "windows: {s} - {s} - {d} pings", .{
@@ -129,7 +146,17 @@ pub fn update(model: *Model, msg: Msg, fx: *Effects) void {
             model.last_action = "quitting";
             fx.quitApp();
         },
+        .chrome_changed => |chrome| {
+            model.chrome_leading = chrome.insets.left;
+            model.chrome_top = chrome.insets.top;
+        },
     }
+}
+
+/// The chrome channel delivers overlay geometry through a Msg like any
+/// other host event; the model stores it and the header binds it.
+fn chromeChanged(chrome: native_sdk.platform.WindowChrome) ?Msg {
+    return .{ .chrome_changed = chrome };
 }
 
 // ---------------------------------------------------------------- windows
@@ -207,6 +234,7 @@ pub fn main(init: std.process.Init) !void {
         .markup = .{ .source = app_markup, .watch_path = "src/app.native", .io = init.io },
         .windows_fn = windows,
         .window_view = windowView,
+        .on_chrome = chromeChanged,
     });
     defer app_state.destroy();
     app_state.model = initialModel();

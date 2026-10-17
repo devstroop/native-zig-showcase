@@ -97,6 +97,22 @@ test "declared windows follow the model" {
     try testing.expectEqual(@as(usize, 0), main.windows(&model, &scratch).len);
 }
 
+test "chrome insets land in the model and size the drag header" {
+    var fx = Effects.init(testing.allocator);
+    defer fx.deinit();
+    var model = main.initialModel();
+
+    // Linux reports all-zero insets; the header keeps its natural height.
+    try testing.expectEqual(@as(f32, 36), Model.header_height(&model));
+
+    var chrome: native_sdk.platform.WindowChrome = .{};
+    chrome.insets = .{ .left = 8, .top = 52 };
+    main.update(&model, .{ .chrome_changed = chrome }, &fx);
+    try testing.expectEqual(@as(f32, 8), model.chrome_leading);
+    try testing.expectEqual(@as(f32, 52), model.chrome_top);
+    try testing.expectEqual(@as(f32, 52), Model.header_height(&model));
+}
+
 test "window verbs ride the effects mirror" {
     var fx = Effects.init(testing.allocator);
     defer fx.deinit();
