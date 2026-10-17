@@ -94,6 +94,15 @@
               <text foreground="info_text">front layer</text>
             </column>
           </stack>
+          <text foreground="text_muted">card is a stacking container with the card's own chrome: both children get the content box, so a corner overlay costs one child:</text>
+          <card width="260" height="64" padding="12">
+            <column main="center" cross="start">
+              <text>Release 0.16</text>
+            </column>
+            <row main="end" cross="start">
+              <badge>new</badge>
+            </row>
+          </card>
         </column>
 
         <column background="surface" radius="md" padding="16" gap="8">
@@ -112,6 +121,16 @@
             </row>
           </scroll>
           <text foreground="text_muted">Scroll offset is model state - see the Navigation &amp; Data section for on-scroll and on-reach-end.</text>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Disclosure</text>
+          <text foreground="text_muted">accordion is a container: the header rides the <span mono="true">text</span> attr, children render only while <span mono="true">selected</span>, and <span mono="true">on-toggle</span> dispatches the flip into the model:</text>
+          <accordion text="Why is there no CSS?" selected="{faq_open}" on-toggle="toggle_faq" padding="12">
+            <column gap="4">
+              <text wrap="true" foreground="text_muted">Because layout is resolved, not cascaded: the same engine that measures every box paints it, and the model is the only state either side of the boundary sees.</text>
+            </column>
+          </accordion>
         </column>
 
         <column background="surface" radius="md" padding="16" gap="8">

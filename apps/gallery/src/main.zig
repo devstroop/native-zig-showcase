@@ -62,6 +62,18 @@ pub const Msg = union(enum) {
     choose_fruit: u8,
     /// Segmented control payload: the mode row's id.
     set_view_mode: u8,
+    /// Standalone toggle (not a button).
+    toggle_pin,
+    /// toggle-group chip payload: the align row's id.
+    set_align: u8,
+    /// Combobox: single-line edit events, model-owned dropdown, picks.
+    combo_edit: canvas.TextInputEvent,
+    combo_open,
+    combo_close,
+    combo_choose: u8,
+    /// Composer: the input-group textarea plus its actions-row send.
+    message_edit: canvas.TextInputEvent,
+    send_message,
     /// Stepper navigation (0-based active index).
     stage_next,
     stage_prev,
@@ -71,6 +83,8 @@ pub const Msg = union(enum) {
     demo_split_resized: f32,
     /// Grid column-count segmented control payload.
     set_layout_columns: u8,
+    /// Accordion disclosure.
+    toggle_faq,
     /// Presentational buttons that only prove hit-testing / dispatch.
     noop,
 
@@ -188,6 +202,19 @@ const column_table = [_]NamedId{
     .{ .id = 2, .label = "2" },
     .{ .id = 3, .label = "3" },
     .{ .id = 4, .label = "4" },
+};
+
+const align_table = [_]NamedId{
+    .{ .id = 0, .label = "Left" },
+    .{ .id = 1, .label = "Center" },
+    .{ .id = 2, .label = "Right" },
+};
+
+const people_table = [_]NamedId{
+    .{ .id = 0, .label = "Ada Lovelace" },
+    .{ .id = 1, .label = "Grace Hopper" },
+    .{ .id = 2, .label = "Alan Turing" },
+    .{ .id = 3, .label = "Margaret Hamilton" },
 };
 
 const stage_count: usize = 3;
@@ -384,7 +411,7 @@ const snippet_text =
 pub const Model = struct {
     /// TextBuffers are consumed through derived methods (`{draft}`), so
     /// the markup checker cannot see a field-level binding.
-    pub const view_unbound = .{ "task_draft", "note_draft", "search_query", "selected_file", "tree_sel", "src_open", "docs_open", "menu_pick", "timeline_sel", "chart_phase", "link_buffer", "link_len", "high_contrast", "track_playing" };
+    pub const view_unbound = .{ "task_draft", "note_draft", "search_query", "selected_file", "tree_sel", "src_open", "docs_open", "menu_pick", "timeline_sel", "chart_phase", "link_buffer", "link_len", "high_contrast", "track_playing", "combo_query", "message_draft", "drag_x", "drag_view_width", "drag_phase", "track_sel" };
 
     // gallery chrome
     section_index: usize = 0,
@@ -404,11 +431,20 @@ pub const Model = struct {
     picker_open: bool = false,
     fruit_id: u8 = 0,
     view_mode: u8 = 0,
+    pin_summary: bool = false,
+    text_align: u8 = 0,
+    combo_query: canvas.TextBuffer(32) = .{},
+    combo_open: bool = false,
+    /// 255 = nothing picked yet; else a people_table id.
+    combo_pick: u8 = 255,
+    message_draft: canvas.TextBuffer(160) = .{},
+    sent_count: u8 = 0,
     stage: usize = 0,
 
     // layout section
     demo_split: f32 = 0.45,
     layout_columns: u8 = 3,
+    faq_open: bool = false,
 
     // navigation & data section
     data_tab: u8 = 0,
@@ -529,6 +565,57 @@ pub const Model = struct {
             2 => "Settings",
             else => "?",
         };
+    }
+
+    pub fn aligns(_: *const Model) []const NamedId {
+        return &align_table;
+    }
+
+    pub fn align_name(model: *const Model) []const u8 {
+        for (align_table) |a| if (a.id == model.text_align) return a.label;
+        return "?";
+    }
+
+    pub fn combo_text(model: *const Model) []const u8 {
+        return model.combo_query.text();
+    }
+
+    fn person_matches(needle: []const u8, person: NamedId) bool {
+        return needle.len == 0 or std.ascii.indexOfIgnoreCase(person.label, needle) != null;
+    }
+
+    /// The combobox's filtered options: the query lives in the model, so
+    /// the dropdown is a pure function of it.
+    pub fn combo_matches(model: *const Model, arena: std.mem.Allocator) []const NamedId {
+        const needle = model.combo_query.text();
+        if (needle.len == 0) return &people_table;
+        const out = arena.alloc(NamedId, people_table.len) catch return &.{};
+        var count: usize = 0;
+        for (people_table) |p| {
+            if (person_matches(needle, p)) {
+                out[count] = p;
+                count += 1;
+            }
+        }
+        return out[0..count];
+    }
+
+    pub fn combo_count(model: *const Model) usize {
+        const needle = model.combo_query.text();
+        var count: usize = 0;
+        for (people_table) |p| {
+            if (person_matches(needle, p)) count += 1;
+        }
+        return count;
+    }
+
+    pub fn combo_name(model: *const Model) []const u8 {
+        for (people_table) |p| if (p.id == model.combo_pick) return p.label;
+        return "none";
+    }
+
+    pub fn message_text(model: *const Model) []const u8 {
+        return model.message_draft.text();
     }
 
     // ---- navigation & data section
@@ -833,12 +920,28 @@ pub fn update(model: *Model, msg: Msg) void {
             model.picker_open = false;
         },
         .set_view_mode => |id| model.view_mode = id,
+        .toggle_pin => model.pin_summary = !model.pin_summary,
+        .set_align => |id| model.text_align = id,
+        .combo_edit => |event| model.combo_query.apply(event),
+        .combo_open => model.combo_open = true,
+        .combo_close => model.combo_open = false,
+        .combo_choose => |id| {
+            model.combo_pick = id;
+            model.combo_open = false;
+            model.combo_query.clear();
+        },
+        .message_edit => |event| model.message_draft.apply(event),
+        .send_message => {
+            model.sent_count +%= 1;
+            model.message_draft.clear();
+        },
         .stage_next => model.stage = @min(stage_count - 1, model.stage + 1),
         .stage_prev => model.stage = @max(1, model.stage) - 1,
 
         // layout
         .demo_split_resized => |fraction| model.demo_split = fraction,
         .set_layout_columns => |count| model.layout_columns = count,
+        .toggle_faq => model.faq_open = !model.faq_open,
         .noop => {},
 
         // navigation & data

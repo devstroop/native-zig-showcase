@@ -39,6 +39,10 @@
             <search-field text="{query}" placeholder="Filter…" label="Filter" on-input="search_edit" grow="1"/>
             <badge>{search_hits} hits</badge>
           </row>
+          <row gap="8" cross="center">
+            <input text="{query}" placeholder="Bare input - same buffer…" label="Quick filter" on-input="search_edit" grow="1"/>
+            <text foreground="text_muted"><span mono="true">input</span> is the bare leaf every field wraps</text>
+          </row>
           <textarea text="{note}" placeholder="Type a note…" label="Notes" on-input="note_edit" height="72"/>
           <text foreground="text_muted">Each field owns a <span mono="true">TextBuffer</span> in the model; <span mono="true">on-input</span> delivers a <span mono="true">canvas.TextInputEvent</span> and update() applies it. Enter dispatches <span mono="true">on-submit</span> - submissions so far: {submitted}.</text>
         </column>
@@ -48,12 +52,21 @@
           <row gap="24" cross="center">
             <checkbox checked="{done_checked}" on-toggle="toggle_done">Done</checkbox>
             <switch checked="{autoplay}" on-toggle="toggle_autoplay">Keep playing</switch>
+            <toggle selected="{pin_summary}" on-toggle="toggle_pin">Pin summary</toggle>
           </row>
           <radio-group gap="16" label="Density">
             <for each="densities" key="id" as="d">
               <radio checked="{density == d.id}" on-change="set_density:{d.id}">{d.label}</radio>
             </for>
           </radio-group>
+          <row gap="8" cross="center">
+            <text foreground="text_muted">Align</text>
+            <toggle-group gap="2" label="Text align">
+              <for each="aligns" key="id" as="a">
+                <toggle-button size="sm" selected="{text_align == a.id}" on-toggle="set_align:{a.id}">{a.label}</toggle-button>
+              </for>
+            </toggle-group>
+          </row>
           <row gap="8" cross="center">
             <text foreground="text_muted">Volume</text>
             <slider value="{volume}" label="Volume" on-change="volume_changed" grow="1"/>
@@ -66,6 +79,17 @@
             <progress value="{volume}"/>
           </row>
           <text foreground="text_muted">A markup slider's <span mono="true">on-change</span> is a plain notification ({volume_changes} so far): the handle keeps the user's drag while the model's value stands. The + / - buttons move the source, and progress mirrors it.</text>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Composer</text>
+          <input-group label="Message" height="96">
+            <textarea text="{message_text}" placeholder="Write a message…" label="Message" on-input="message_edit"/>
+            <input-group-actions>
+              <button size="sm" icon="send" label="Send" on-press="send_message"/>
+            </input-group-actions>
+          </input-group>
+          <text foreground="text_muted">The <span mono="true">input-group</span> composite is one bordered field: exactly one <span mono="true">textarea</span> child plus an optional <span mono="true">input-group-actions</span> row. Sent so far: {sent_count}.</text>
         </column>
 
         <column background="surface" radius="md" padding="16" gap="8">
@@ -101,8 +125,23 @@
           <text foreground="text_muted">The select is only a trigger: the options are an <span mono="true">if</span>-gated dropdown anchored beside it in a stack. Open state lives in the model, and <span mono="true">on-dismiss</span> closes it - Escape included.</text>
         </column>
 
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Combobox</text>
+          <stack>
+            <combobox text="{combo_text}" placeholder="Search people…" label="Assignee" on-input="combo_edit" on-press="combo_open"/>
+            <if test="{combo_open}">
+              <dropdown-menu anchor="below" anchor-alignment="stretch" on-dismiss="combo_close">
+                <for each="combo_matches" key="id" as="p">
+                  <menu-item on-press="combo_choose:{p.id}" selected="{p.id == combo_pick}">{p.label}</menu-item>
+                </for>
+              </dropdown-menu>
+            </if>
+          </stack>
+          <text foreground="text_muted">A combobox is the select trigger plus text entry: <span mono="true">on-input</span> filters the model's matches and <span mono="true">on-press</span> opens the same model-owned <span mono="true">dropdown-menu</span>. Picked: {combo_name} · {combo_count} match(es).</text>
+        </column>
+
         <column background="surface" radius="md" padding="12" gap="4">
-          <text size="sm"><span mono="true">density={density_name} · view={view_mode_name} · fruit={fruit_name} · submissions={submitted} · slider_changes={volume_changes}</span></text>
+          <text size="sm"><span mono="true">density={density_name} · view={view_mode_name} · fruit={fruit_name} · align={align_name} · submissions={submitted} · slider_changes={volume_changes}</span></text>
         </column>
 
       </column>

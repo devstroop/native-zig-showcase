@@ -6,6 +6,38 @@ const geometry = native_sdk.geometry;
 
 const PlaygroundMarkup = canvas.MarkupView(app.Model, app.Msg);
 
+/// A compact document holding one of every fill-in control, so the
+/// handler wiring is checked where the runtime resolves it.
+const fillins_source =
+    \\<column gap="8">
+    \\  <toggle selected="{pin_summary}" on-toggle="toggle_pin">Pin summary</toggle>
+    \\  <toggle-group gap="2" label="Text align">
+    \\    <for each="aligns" key="id" as="a">
+    \\      <toggle-button size="sm" selected="{text_align == a.id}" on-toggle="set_align:{a.id}">{a.label}</toggle-button>
+    \\    </for>
+    \\  </toggle-group>
+    \\  <stack>
+    \\    <combobox text="{combo_text}" placeholder="Search people…" label="Assignee" on-input="combo_edit" on-press="combo_open"/>
+    \\    <if test="{combo_open}">
+    \\      <dropdown-menu anchor="below" on-dismiss="combo_close">
+    \\        <for each="combo_matches" key="id" as="p">
+    \\          <menu-item on-press="combo_choose:{p.id}" selected="{p.id == combo_pick}">{p.label}</menu-item>
+    \\        </for>
+    \\      </dropdown-menu>
+    \\    </if>
+    \\  </stack>
+    \\  <input-group label="Message" height="96">
+    \\    <textarea text="{message_text}" placeholder="Write a message…" label="Message" on-input="message_edit"/>
+    \\    <input-group-actions>
+    \\      <button size="sm" icon="send" label="Send" on-press="send_message"/>
+    \\    </input-group-actions>
+    \\  </input-group>
+    \\  <accordion text="Why is there no CSS?" selected="{faq_open}" on-toggle="toggle_faq" padding="12">
+    \\    <text>answered</text>
+    \\  </accordion>
+    \\</column>
+;
+
 /// The gesture wiring a live rebuild shows, driven through the same
 /// handler table the runtime uses (Tree.msgFor* resolve real handlers).
 const playground_smoke_source =
@@ -231,4 +263,79 @@ test "hold, drag, double-press, and hover resolve to their Msgs" {
     const tile = findWidget(tree.root, "Hover tile").?;
     try std.testing.expectEqual(app.Msg.pg_hover_enter, tree.msgFor(tile.id, .hover_enter).?);
     try std.testing.expectEqual(app.Msg.pg_hover_leave, tree.msgFor(tile.id, .hover_leave).?);
+}
+
+// ---- fill-in controls: toggle, toggle-group, combobox, input-group
+
+test "pin toggle and align chips flip model state" {
+    var model = app.Model{};
+    try std.testing.expect(!model.pin_summary);
+    app.update(&model, .toggle_pin);
+    try std.testing.expect(model.pin_summary);
+    app.update(&model, .{ .set_align = 2 });
+    try std.testing.expectEqualStrings("Right", app.Model.align_name(&model));
+}
+
+test "combobox edits filter the people list; picking stores the id" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    var model = app.Model{};
+
+    try std.testing.expectEqual(@as(usize, 4), app.Model.combo_count(&model));
+    app.update(&model, .{ .combo_edit = .{ .insert_text = "gra" } });
+    try std.testing.expectEqualStrings("gra", app.Model.combo_text(&model));
+    try std.testing.expectEqual(@as(usize, 1), app.Model.combo_count(&model));
+    const matches = app.Model.combo_matches(&model, arena);
+    try std.testing.expectEqual(@as(usize, 1), matches.len);
+    try std.testing.expectEqualStrings("Grace Hopper", matches[0].label);
+
+    app.update(&model, .combo_open);
+    try std.testing.expect(model.combo_open);
+    app.update(&model, .{ .combo_choose = 1 });
+    try std.testing.expect(!model.combo_open);
+    try std.testing.expectEqualStrings("Grace Hopper", app.Model.combo_name(&model));
+    try std.testing.expectEqualStrings("", app.Model.combo_text(&model));
+}
+
+test "composer sends and clears; accordion disclosure flips" {
+    var model = app.Model{};
+    app.update(&model, .{ .message_edit = .{ .insert_text = "hello" } });
+    try std.testing.expectEqualStrings("hello", app.Model.message_text(&model));
+    app.update(&model, .send_message);
+    try std.testing.expectEqual(@as(u8, 1), model.sent_count);
+    try std.testing.expectEqualStrings("", app.Model.message_text(&model));
+
+    try std.testing.expect(!model.faq_open);
+    app.update(&model, .toggle_faq);
+    try std.testing.expect(model.faq_open);
+}
+
+test "fill-in controls wire their handlers through the markup" {
+    var arena_state = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena_state.deinit();
+    const arena = arena_state.allocator();
+    const model = app.Model{};
+
+    var view = try PlaygroundMarkup.init(arena, fillins_source);
+    var ui = canvas.Ui(app.Msg).init(arena);
+    const tree = try ui.finalize(try view.build(&ui, &model));
+
+    const pin = findWidget(tree.root, "Pin summary").?;
+    try std.testing.expectEqual(app.Msg.toggle_pin, tree.msgFor(pin.id, .toggle).?);
+
+    const right = findWidget(tree.root, "Right").?;
+    switch (tree.msgFor(right.id, .toggle).?) {
+        .set_align => |id| try std.testing.expectEqual(@as(u8, 2), id),
+        else => return error.UnexpectedMsg,
+    }
+
+    const combo = findWidget(tree.root, "Assignee").?;
+    try std.testing.expectEqual(app.Msg.combo_open, tree.msgFor(combo.id, .press).?);
+
+    const faq = findWidget(tree.root, "Why is there no CSS?").?;
+    try std.testing.expectEqual(app.Msg.toggle_faq, tree.msgFor(faq.id, .toggle).?);
+
+    const send = findWidget(tree.root, "Send").?;
+    try std.testing.expectEqual(app.Msg.send_message, tree.msgFor(send.id, .press).?);
 }
