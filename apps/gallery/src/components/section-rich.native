@@ -1,0 +1,94 @@
+<!-- The Rich Content section: markdown lowered to widgets, highlighted
+     code, vector chart series bound to model f32 data, composite
+     timelines, avatars, and progressive loading states. Every
+     non-trivial string is a model-derived binding - the view formats
+     nothing in place. -->
+<template name="section-rich">
+  <column gap="12" grow="1">
+    <text size="heading">Rich Content</text>
+    <text wrap="true" foreground="text_muted">Markdown lowers to ordinary widgets, code is a bare highlighted leaf the caller frames, charts bind model f32 iterables through the vector path pipeline, and timelines are composite ledgers. Nothing here formats in the view.</text>
+
+    <scroll grow="1">
+      <column gap="12">
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <row gap="12" cross="center">
+            <text size="lg" grow="1">Markdown</text>
+            <for each="channels" key="id" as="c">
+              <toggle-button selected="{c.id == release_channel}" on-press="set_channel:{c.id}">{c.label}</toggle-button>
+            </for>
+            <badge>{channel_name}</badge>
+          </row>
+          <text size="sm" foreground="text_muted">source is ONE binding - here an arena fn composing the document, and the channel toggle above changes what it composes. Links dispatch on-link, details blocks flip flags indexed in document order.</text>
+          <markdown source="{release_brief}" on-link="open_note_link" on-details="toggle_note_details" details-expanded="{note_details}" issue-link-base="gallery://issue/"/>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Code</text>
+          <text wrap="true" foreground="text_muted">The code leaf ships no chrome - the inset panel below is caller-composed. line-numbers pairs wrapped logical lines with their number; wrap="false" keeps long lines inside one horizontal scroll region.</text>
+          <column background="surface_subtle" radius="sm" padding="12">
+            <code source="{zig_snippet}" language="zig" line-numbers wrap="false" label="Snippet from this app"/>
+          </column>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <row gap="12" cross="center">
+            <text size="lg" grow="1">Charts</text>
+            <button size="sm" variant="secondary" on-press="advance_chart">Advance data</button>
+          </row>
+          <text size="sm" foreground="text_muted">series values name model []const f32 iterables; charts repaint exactly when their values change, token colors re-theme them, and everything draws through the shared vector pipeline.</text>
+          <chart grow="1" height="180" y-min="0" y-max="1" grid-lines="3" label="Waveform history">
+            <series values="{chart_wave}" kind="line" color="accent" label="Primary"/>
+            <series values="{chart_echo}" kind="area" color="info" label="Echo"/>
+          </chart>
+          <row gap="12" cross="center">
+            <text size="sm" foreground="text_muted">sparkline, fixed 0..1:</text>
+            <chart width="239" height="32" y-min="0" y-max="1" label="CPU history">
+              <series values="{cpu_trace}" kind="line" color="success" label="CPU"/>
+            </chart>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Timeline</text>
+          <text wrap="true" foreground="text_muted">timeline-items are leaves in a composite ledger: title, description, meta, tone, and per-item connector. Pressing one dispatches its id; the selected row is derived from the model.</text>
+          <timeline gap="4">
+            <for each="timeline_rows" key="id" as="t">
+              <timeline-item title="{t.title}" description="{t.description}" meta="{t.meta}" variant="{t.tone}" selected="{t.sel}" connector="{t.connector}" on-press="select_step:{t.id}"/>
+            </for>
+          </timeline>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <row gap="12" cross="center">
+            <text size="lg" grow="1">People and progressive states</text>
+            <toggle-button selected="{rich_loading}" on-press="toggle_rich_loading">Toggle loading</toggle-button>
+          </row>
+          <row gap="8" cross="center">
+            <avatar label="Ada Lovelace">AL</avatar>
+            <avatar label="Grace Hopper">GH</avatar>
+            <avatar label="Margaret Hamilton">MH</avatar>
+            <text size="sm" foreground="text_muted">avatars render initials until a runtime image id arrives - the id is just model data.</text>
+          </row>
+          <if test="{rich_loading}">
+            <row gap="16" cross="center">
+              <spinner/>
+              <column gap="8" grow="1">
+                <skeleton width="220" height="16"/>
+                <skeleton width="320" height="16"/>
+                <skeleton width="180" height="16"/>
+              </column>
+            </row>
+          </if>
+          <else>
+            <column gap="4">
+              <text>Loaded: the switch above gates this subtree, so loading states are ordinary if-branches - nothing is fetched from the view.</text>
+              <text size="sm" foreground="text_muted">last link: {last_link} · step: {step_name}</text>
+            </column>
+          </else>
+        </column>
+
+      </column>
+    </scroll>
+  </column>
+</template>

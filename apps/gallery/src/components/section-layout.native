@@ -1,0 +1,155 @@
+<!-- The Layout section: the flexbox subset (row/column, gap, padding,
+     grow, main/cross alignment), definite sizes, grids, stacks, scroll
+     regions, and resizable panes - all pure geometry, no CSS. The mini
+     split echoes its fraction through the model exactly like the shell
+     split does. -->
+<template name="section-layout">
+  <column gap="12" grow="1">
+    <text size="heading">Layout</text>
+    <text wrap="true" foreground="text_muted">Rows, columns, grids, and stacks: a flexbox subset where gap, padding, and grow are the whole vocabulary - no floats, no cascade, no CSS.</text>
+
+    <scroll grow="1">
+      <column gap="12">
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Flow &amp; alignment</text>
+          <text foreground="text_muted">cross aligns children across the flow axis:</text>
+          <row gap="8" cross="start">
+            <button size="sm" variant="secondary" on-press="noop">start</button>
+            <button variant="secondary" on-press="noop">default</button>
+            <button size="lg" variant="secondary" on-press="noop">end</button>
+          </row>
+          <row gap="8" cross="center">
+            <button size="sm" variant="secondary" on-press="noop">start</button>
+            <button variant="secondary" on-press="noop">center</button>
+            <button size="lg" variant="secondary" on-press="noop">end</button>
+          </row>
+          <row gap="8" cross="end">
+            <button size="sm" variant="secondary" on-press="noop">a</button>
+            <button variant="secondary" on-press="noop">b</button>
+            <button size="lg" variant="secondary" on-press="noop">c</button>
+          </row>
+          <text foreground="text_muted">main aligns along it:</text>
+          <row gap="8" main="center">
+            <button variant="secondary" on-press="noop">Centered</button>
+            <button variant="secondary" on-press="noop">Pair</button>
+          </row>
+          <row gap="8" main="space_between">
+            <button size="sm" variant="secondary" on-press="noop">Left</button>
+            <button size="sm" variant="secondary" on-press="noop">Middle</button>
+            <button size="sm" variant="secondary" on-press="noop">Right</button>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Grow &amp; definite sizes</text>
+          <text foreground="text_muted">width and height are definite; grow splits what is left. The strip below is height=56 with one fixed cell and two growers:</text>
+          <row gap="8" height="56" cross="stretch">
+            <column width="80" background="surface_subtle" radius="sm" main="center" cross="center">
+              <text>width 80</text>
+            </column>
+            <column grow="1" background="info" radius="sm" main="center" cross="center">
+              <text foreground="info_text">grow 1</text>
+            </column>
+            <column grow="2" background="accent" radius="sm" main="center" cross="center">
+              <text foreground="accent_text">grow 2</text>
+            </column>
+          </row>
+          <text foreground="text_muted">min-width floors a shrink without pinning a size; max-width caps growth. This cell is min-width=160 max-width=280:</text>
+          <row gap="8" cross="stretch">
+            <column min-width="160" max-width="280" grow="1" background="surface_subtle" radius="sm" padding="8" main="center">
+              <text wrap="true">clamp me - drag the outer split and watch this pane refuse to shrink below 160 or grow past 280.</text>
+            </column>
+            <column grow="1" background="surface_subtle" radius="sm" padding="8" main="center">
+              <text wrap="true">this neighbor absorbs every leftover point</text>
+            </column>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Grids &amp; stacks</text>
+          <text foreground="text_muted">grid takes a fixed column count (here: {layout_columns}):</text>
+          <row gap="8" cross="center">
+            <text foreground="text_muted">columns</text>
+            <for each="column_choices" key="id" as="c">
+              <segmented-control selected="{layout_columns == c.id}" on-press="set_layout_columns:{c.id}">{c.label}</segmented-control>
+            </for>
+          </row>
+          <grid columns="{layout_columns}" gap="8">
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>1</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>2</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>3</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>4</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>5</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>6</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>7</text></column>
+            <column background="surface_subtle" radius="sm" main="center" cross="center" height="40"><text>8</text></column>
+          </grid>
+          <text foreground="text_muted">stack layers children on the same frame - the front cell sits on the back one:</text>
+          <stack width="240" height="64">
+            <column background="surface_subtle" radius="md" padding="8">
+              <text>back layer</text>
+            </column>
+            <column width="110" height="32" background="info" radius="md" main="center" cross="center">
+              <text foreground="info_text">front layer</text>
+            </column>
+          </stack>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Scroll regions</text>
+          <text foreground="text_muted">Every scroll axis is available - this one scrolls horizontally with a rubber-band overscroll:</text>
+          <scroll axis="horizontal" height="44" overscroll="rubber_band">
+            <row gap="8" cross="center">
+              <button size="sm" variant="secondary" on-press="noop">alpha</button>
+              <button size="sm" variant="secondary" on-press="noop">bravo</button>
+              <button size="sm" variant="secondary" on-press="noop">charlie</button>
+              <button size="sm" variant="secondary" on-press="noop">delta</button>
+              <button size="sm" variant="secondary" on-press="noop">echo</button>
+              <button size="sm" variant="secondary" on-press="noop">foxtrot</button>
+              <button size="sm" variant="secondary" on-press="noop">golf</button>
+              <button size="sm" variant="secondary" on-press="noop">hotel</button>
+            </row>
+          </scroll>
+          <text foreground="text_muted">Scroll offset is model state - see the Navigation &amp; Data section for on-scroll and on-reach-end.</text>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Splits &amp; resizables</text>
+          <text foreground="text_muted">A split inside the pane: drag its divider and the applied fraction echoes through the model, same as the shell split.</text>
+          <split value="{demo_split}" on-resize="demo_split_resized" height="120" gap="8">
+            <column padding="8" background="surface_subtle" radius="sm" min-width="80">
+              <text wrap="true">left {percent(demo_split)}</text>
+            </column>
+            <column padding="8" background="surface_subtle" radius="sm" grow="1">
+              <text wrap="true">right pane absorbs the rest</text>
+            </column>
+          </split>
+          <text foreground="text_muted">resizable gives a user-dragged width without a split - drag its trailing edge:</text>
+          <row gap="8" cross="start">
+            <resizable width="220">
+              <column padding="8" background="surface_subtle" radius="sm">
+                <text wrap="true">resizable pane - starts at width 220 and the user owns it after that</text>
+              </column>
+            </resizable>
+            <column grow="1" padding="8" background="surface_subtle" radius="sm">
+              <text wrap="true">fixed neighbor</text>
+            </column>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Text at a width</text>
+          <text width="240" overflow="ellipsis">A single line whose overflow is ellipsis - the default - elides with a real measured character at the width it is given.</text>
+          <text width="240" overflow="clip" foreground="text_muted">The same line with overflow=clip hard-cuts at the frame instead of measuring an ellipsis.</text>
+          <text width="240" wrap="true" foreground="text_muted">And wrap=true word-wraps at the width the element receives, reserving the wrapped height in the column.</text>
+        </column>
+
+        <column background="surface" radius="md" padding="12" gap="4">
+          <text size="sm"><span mono="true">demo_split={percent(demo_split)} · layout_columns={layout_columns}</span></text>
+        </column>
+
+      </column>
+    </scroll>
+  </column>
+</template>

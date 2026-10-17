@@ -1,0 +1,25 @@
+<!-- The Overview section: what this app is, the four-part app model,
+     and how to drive it. A zero-arg template - its body expands at the
+     <use> site, so every binding resolves this app's Model. -->
+<template name="section-overview">
+  <column gap="12" grow="1">
+    <text size="heading">Welcome to the gallery</text>
+    <text wrap="true" foreground="text_muted">Every section here is a live demonstration of the Native SDK's native UI toolkit: rendered by the SDK's own engine, authored in Zig and .native markup, with no WebView and no JavaScript at runtime.</text>
+
+    <column background="surface" radius="md" padding="16" gap="8">
+      <text size="lg">The app model</text>
+      <text>State lives in <span mono="true">Model</span>. Everything that can happen is a <span mono="true">Msg</span>. <span mono="true">update(model, msg)</span> is the only place state changes, and the view derives from the model - markup can never mutate state.</text>
+      <text wrap="true" foreground="text_muted">Try it: drag the divider between the sidebar and this pane. The applied fraction echoes back through the model, so rebuilds and hot reloads never fight live resizing.</text>
+    </column>
+
+    <column background="surface" radius="md" padding="16" gap="8">
+      <text size="lg">Hot reload</text>
+      <text>Edit <span mono="true">src/app.native</span> or any file under <span mono="true">src/components/</span> while native dev runs: the window updates in about two seconds and model state survives.</text>
+    </column>
+
+    <row gap="8" cross="center">
+      <button variant="primary" on-press="next_section">Next: Controls</button>
+      <text foreground="text_muted" wrap="true">or pick a section from the sidebar</text>
+    </row>
+  </column>
+</template>

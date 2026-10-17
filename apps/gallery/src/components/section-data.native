@@ -1,0 +1,115 @@
+<!-- The Navigation & Data section: tabs, breadcrumbs, and pagination for
+     wayfinding; a table, a keyed list, and a virtualized log for records;
+     a role-driven disclosure tree; and the scroll channel - on-scroll
+     mirrors the applied offset into the model, on-reach-end appends the
+     next batch with built-in hysteresis, so one approach is one fetch. -->
+<template name="section-data">
+  <column gap="12" grow="1">
+    <text size="heading">Navigation &amp; Data</text>
+    <text wrap="true" foreground="text_muted">Wayfinding controls, record views, and the scroll channel. Every row is a keyed model iterable, selection lives in the model, and scroll offsets and fetch windows are ordinary fields.</text>
+
+    <scroll grow="1">
+      <column gap="12">
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Tabs, breadcrumbs, pagination</text>
+          <tabs gap="4">
+            <for each="data_tabs" key="id" as="t">
+              <button variant="ghost" selected="{data_tab == t.id}" on-press="set_data_tab:{t.id}">{t.label}</button>
+            </for>
+          </tabs>
+          <breadcrumb gap="4">
+            <for each="crumbs" key="id" as="c">
+              <button size="sm" variant="ghost" selected="{crumb == c.id}" on-press="set_crumb:{c.id}">{c.label}</button>
+            </for>
+          </breadcrumb>
+          <pagination gap="4">
+            <button size="sm" on-press="page_prev">Prev</button>
+            <badge>page {page} / {page_count}</badge>
+            <button size="sm" on-press="page_next">Next</button>
+          </pagination>
+          <text foreground="text_muted">The strip selects a panel below; the breadcrumb selects a path segment; pagination clamps in update(). Path: <span mono="true">{crumb_path}</span> - page {page} of {page_count}.</text>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Record views</text>
+          <row gap="8" cross="center">
+            <text foreground="text_muted">Active tab:</text>
+            <badge>{data_tab_name}</badge>
+          </row>
+
+          <if test="{data_tab == 0}">
+            <text foreground="text_muted">This panel is gated by <span mono="true">if</span> - unmounted tabs cost nothing. Switch to Records for the table and list, or Log for the scroll channel.</text>
+          </if>
+
+          <if test="{data_tab == 1}">
+            <column gap="8">
+              <text foreground="text_muted">table rows hold table-cells; any cell can dispatch. Selected: {file_name}</text>
+              <table gap="2">
+                <table-row gap="4">
+                  <table-cell>File</table-cell>
+                  <table-cell>Size</table-cell>
+                  <table-cell>Kind</table-cell>
+                </table-row>
+                <for each="file_rows" key="id" as="f">
+                  <table-row gap="4">
+                    <table-cell on-press="select_file:{f.id}">{f.name}</table-cell>
+                    <table-cell>{f.size}</table-cell>
+                    <table-cell>{f.kind}</table-cell>
+                  </table-row>
+                </for>
+              </table>
+              <text foreground="text_muted">Keyed list below: identity travels with the key, so reorders and rebuilds keep engine state. Selected: log #{log_sel}</text>
+              <list gap="2">
+                <for each="logs" key="id" as="l">
+                  <list-item icon="file-text" selected="{log_sel == l.id}" on-press="select_log:{l.id}">{l.title}</list-item>
+                </for>
+              </list>
+            </column>
+          </if>
+
+          <if test="{data_tab == 2}">
+            <column gap="8">
+              <text wrap="true" foreground="text_muted">The model holds {log_count} log rows. Scroll to the bottom: on-reach-end fires once per approach - fetches so far: {fetch_count} - and each fetch appends 12 rows, capped at 240.</text>
+              <scroll height="200" value="{log_scroll}" on-scroll="log_scrolled" on-reach-end="log_reach_end">
+                <column gap="2">
+                  <for each="logs" key="id" as="l">
+                    <list-item on-press="select_log:{l.id}" selected="{log_sel == l.id}">{l.title}</list-item>
+                  </for>
+                </column>
+              </scroll>
+              <text foreground="text_muted">The applied offset round-trips through the model: <span mono="true">offset_y={round(log_scroll)}</span> · velocity is model data too when you bind it.</text>
+            </column>
+          </if>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Disclosure tree</text>
+          <text wrap="true" foreground="text_muted">Role-driven: any pressable row carrying role="treeitem" joins one roving focus set. Up/Down walk visible rows, Left/Right collapse and expand through on-toggle, Home/End jump, Enter/Space select. Collapsed children are simply not rendered - the derived iterable hides them. Selected: {tree_node_label}</text>
+          <tree gap="2" label="Project files">
+            <for each="tree_rows" key="id" as="n">
+              <row gap="8" cross="center">
+                <column width="{n.indent}"/>
+                <if test="{n.expandable}">
+                  <panel role="treeitem" expanded="{n.expanded}" on-press="select_node:{n.id}" on-toggle="toggle_node:{n.id}" padding="4" grow="1">
+                    <row gap="8" cross="center"><icon name="{n.icon}"/><text>{n.label}</text></row>
+                  </panel>
+                </if>
+                <else>
+                  <panel role="treeitem" on-press="select_node:{n.id}" padding="4" grow="1">
+                    <row gap="8" cross="center"><icon name="{n.icon}"/><text>{n.label}</text></row>
+                  </panel>
+                </else>
+              </row>
+            </for>
+          </tree>
+        </column>
+
+        <column background="surface" radius="md" padding="12" gap="4">
+          <text size="sm"><span mono="true">tab={data_tab_name} · path={crumb_path} · page={page}/{page_count} · file={file_name} · tree={tree_node_label} · log_sel={log_sel} · fetched={fetch_count} · offset={round(log_scroll)}</span></text>
+        </column>
+
+      </column>
+    </scroll>
+  </column>
+</template>

@@ -1,0 +1,133 @@
+<!-- The Overlays section: modal surfaces (dialog, sheet, drawer), anchored
+     floaters (popover, tooltip, dropdown), the platform context menu, and
+     inline surfaces (alert, bubble + reactions). Every surface is an
+     if-gated model child; Escape and outside clicks dispatch on-dismiss,
+     so update() owns every close. -->
+<template name="section-overlays">
+  <column gap="12" grow="1">
+    <text size="heading">Overlays</text>
+    <text wrap="true" foreground="text_muted">Modal surfaces, anchored floaters, the platform context menu, and inline surfaces. Every overlay is an if-gated model child - there is no hidden engine open flag - and dismissal is a Msg, Escape included.</text>
+
+    <scroll grow="1">
+      <column gap="12">
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Modal surfaces</text>
+          <text wrap="true" foreground="text_muted">Dialogs center in the viewport; sheets dock right and span its height; drawers dock bottom. All are root-relative - ancestor scroll and clipping cannot move them - and each carries an on-dismiss arm for Escape and outside clicks. Launches: {launches}.</text>
+          <row gap="8" cross="center">
+            <button variant="primary" on-press="open_dialog">Open dialog</button>
+            <button variant="secondary" on-press="open_sheet">Open sheet</button>
+            <button variant="secondary" on-press="open_drawer">Open drawer</button>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Anchored surfaces</text>
+          <text wrap="true" foreground="text_muted">Anchored floaters position against their parent's frame inside a stack, consume no flow space, paint late above the tree, and auto-flip at the window edges. Tooltip visibility is runtime-owned hover intent - the model never hears hover.</text>
+          <row gap="24" cross="center">
+            <stack>
+              <button variant="outline" on-press="toggle_popover">Details</button>
+              <if test="{popover_open}">
+                <popover anchor="below" anchor-alignment="stretch" on-dismiss="close_popover">
+                  <column gap="8" padding="12" width="220">
+                    <text size="sm">A popover is an if-gated child beside its trigger, floated with anchor.</text>
+                    <button size="sm" variant="primary" on-press="close_popover">Got it</button>
+                  </column>
+                </popover>
+              </if>
+            </stack>
+            <stack>
+              <button variant="ghost" on-press="noop">Hover me</button>
+              <tooltip anchor="below" tooltip-delay="150">Shows after 150 ms of hover intent</tooltip>
+            </stack>
+            <stack>
+              <button variant="ghost" on-press="noop">Or me</button>
+              <tooltip anchor="above" tooltip-delay="0">tooltip-delay="0" shows instantly; Escape dismisses</tooltip>
+            </stack>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Context menu</text>
+          <text wrap="true" foreground="text_muted">One declared menu, platform-decided presentation: right-click (or ctrl-click) the row below and the host shows the real OS menu where it has a presenter. Items can be disabled and separators keep their slots. Last action: {menu_pick_name}.</text>
+          <list-item label="report.txt">
+            <row gap="8" cross="center">
+              <icon name="file-text"/>
+              <text grow="1">report.txt</text>
+              <text foreground="text_muted">right-click me</text>
+            </row>
+            <context-menu>
+              <for each="context_actions" key="id" as="a">
+                <if test="{a.separator}">
+                  <separator/>
+                </if>
+                <else>
+                  <menu-item disabled="{a.disabled}" on-press="menu_action:{a.id}">{a.label}</menu-item>
+                </else>
+              </for>
+            </context-menu>
+          </list-item>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Inline surfaces</text>
+          <alert text="Heads up">
+            <text>An alert is a titled surface - children stack inside it.</text>
+          </alert>
+          <alert text="Tests passing">
+            <text>Surfaces re-theme with tokens; no color literals anywhere.</text>
+          </alert>
+          <column gap="32" padding="8">
+            <bubble variant="secondary" padding="8">
+              <text>Bubbles hug their message up to 80% of the thread width.</text>
+              <reactions>+2</reactions>
+            </bubble>
+            <bubble variant="primary" padding="8">
+              <text>The reaction pill docks on the bottom edge; one run of text, start or end.</text>
+              <reactions text-alignment="start">+1</reactions>
+            </bubble>
+          </column>
+        </column>
+
+        <column background="surface" radius="md" padding="12" gap="4">
+          <text size="sm"><span mono="true">dialog={dialog_open} · sheet={sheet_open} · drawer={drawer_open} · popover={popover_open} · menu={menu_pick_name} · launches={launches}</span></text>
+        </column>
+
+      </column>
+    </scroll>
+
+    <if test="{dialog_open}">
+      <dialog text="Confirm launch" on-dismiss="close_dialog">
+        <column gap="8" padding="16" width="320">
+          <text wrap="true">This modal is an if-gated model child. Escape and clicks outside dispatch on-dismiss, so update() owns the close - a model that keeps the flag true gets the dialog back.</text>
+          <row gap="8" main="end">
+            <button variant="secondary" on-press="close_dialog">Cancel</button>
+            <button variant="primary" on-press="confirm_dialog">Launch</button>
+          </row>
+        </column>
+      </dialog>
+    </if>
+
+    <if test="{sheet_open}">
+      <sheet text="Inspector" on-dismiss="close_sheet">
+        <column gap="8" padding="16" width="260">
+          <text foreground="text_muted">Sheets span the viewport height and dock to the right edge.</text>
+          <separator/>
+          <row gap="8" cross="center"><icon name="panel-right"/><text>Docked right</text></row>
+          <row gap="8" cross="center"><icon name="panel-left"/><text>Root-relative</text></row>
+          <button variant="secondary" on-press="close_sheet">Close</button>
+        </column>
+      </sheet>
+    </if>
+
+    <if test="{drawer_open}">
+      <drawer text="Console" on-dismiss="close_drawer">
+        <column gap="8" padding="16">
+          <text foreground="text_muted">Drawers span the viewport width and dock to the bottom edge.</text>
+          <button variant="secondary" on-press="close_drawer">Close</button>
+        </column>
+      </drawer>
+    </if>
+
+  </column>
+</template>

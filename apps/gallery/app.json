@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.native-sdk.dev/app/v1.json",
+    "id": "dev.native_sdk.gallery",
+    "name": "gallery",
+    "display_name": "Gallery",
+    "description": "The Native SDK native UI gallery: every element, layout rule, gesture, and surface in one Zig app.",
+    "version": "0.1.0",
+    "icons": ["assets/icon.png"],
+    "platforms": ["macos", "linux"],
+    "permissions": ["view", "command"],
+    "capabilities": ["native_views", "gpu_surfaces"],
+    "shell": {
+        "windows": [
+            {
+                "label": "main",
+                "title": "Native Zig Showcase",
+                "width": 1100,
+                "height": 760,
+                "views": [
+                    { "label": "main-canvas", "kind": "gpu_surface", "fill": true, "role": "Gallery canvas", "accessibility_label": "Gallery", "gpu_backend": "metal", "gpu_pixel_format": "bgra8_unorm", "gpu_present_mode": "timer", "gpu_alpha_mode": "opaque", "gpu_color_space": "srgb", "gpu_vsync": true }
+                ]
+            }
+        ]
+    },
+    "security": {
+        "navigation": {
+            "allowed_origins": ["zero://app", "zero://inline"],
+            "external_links": { "action": "deny" }
+        }
+    },
+    "web_engine": "system",
+    "cef": { "dir": "third_party/cef/macos", "auto_install": false }
+}

@@ -1,0 +1,68 @@
+<!-- The Playground section: the pointer gesture channels markup binds
+     directly. Press vs hold on one control, the on-drag record with its
+     exact shape, the click-then-double-click convention on list rows,
+     and hover containment edges. Every value shown is a model binding. -->
+<template name="section-playground">
+  <column gap="12" grow="1">
+    <text size="heading">Playground</text>
+    <text wrap="true" foreground="text_muted">Four pointer channels: hold, drag, double-press, and hover. Each dispatches ordinary Msgs - the model owns every decision and every pixel shown here is a binding.</text>
+
+    <scroll grow="1">
+      <column gap="12">
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Press and hold</text>
+          <text size="sm" wrap="true" foreground="text_muted">A quick click fires on-press; a pointer held ~350 ms fires on-hold instead, and that release presses nothing. On a route with no context menu, right-click fires the hold immediately.</text>
+          <row gap="8">
+            <button on-press="pg_press">press</button>
+            <button on-press="pg_press" on-hold="pg_hold">hold for more</button>
+          </row>
+          <row gap="16">
+            <text size="sm" foreground="text_muted">presses: {pg_press_count}</text>
+            <text size="sm" foreground="text_muted">holds: {pg_hold_count}</text>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Drag pad</text>
+          <text size="sm" wrap="true" foreground="text_muted">on-drag delivers one exact record: sourceId, phase, x, y, viewWidth, viewHeight. The point is live view geometry with captured-safe f64 fields, so the bar below tracks the pointer across the view - not a pad-local fraction.</text>
+          <panel on-drag="pad_dragged:{drag_track_id}" label="Drag pad" padding="12" background="surface_subtle" radius="sm" grow="1">
+            <progress value="{drag_pct}" label="Pointer position"/>
+          </panel>
+          <row gap="16">
+            <text size="sm" foreground="text_muted">{pad_status}</text>
+            <text size="sm" foreground="text_muted">phase: {drag_phase_name}</text>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Double-click to play</text>
+          <text size="sm" wrap="true" foreground="text_muted">One click selects; a second click inside the double-click window fires on-double-press in place of a second press - additive, never delayed. The badges below are derived from the model ids.</text>
+          <for each="tracks" key="id" as="t">
+            <list-item on-press="select_track:{t.id}" on-double-press="play_track:{t.id}" label="{t.name}" selected="{t.sel}">
+              <row gap="8">
+                <text>{t.name}</text>
+                <spacer grow="1"/>
+                <badge variant="{t.tone}">{t.state}</badge>
+              </row>
+            </list-item>
+          </for>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="8">
+          <text size="lg">Hover containment</text>
+          <text size="sm" wrap="true" foreground="text_muted">on-hover-enter and on-hover-leave are discrete containment edges - enter fires once, leave fires once, and clicks still fall through because binding hover never makes an element pressable.</text>
+          <panel on-hover-enter="pg_hover_enter" on-hover-leave="pg_hover_leave" label="Hover tile" padding="16" height="64" background="surface_subtle" radius="sm" grow="1">
+            <if test="{pg_hovered}">
+              <text>pointer inside · enter has fired once</text>
+            </if>
+            <else>
+              <text foreground="text_muted">move the pointer over this tile</text>
+            </else>
+          </panel>
+        </column>
+
+      </column>
+    </scroll>
+  </column>
+</template>

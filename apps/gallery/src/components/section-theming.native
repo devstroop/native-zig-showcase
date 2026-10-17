@@ -1,0 +1,71 @@
+<!-- The Theming section: theme_state_fn derives a pack, color scheme, and
+     accent from the model on every rebuild, so every token reference in
+     the app re-resolves live. The preview widgets are ordinary controls -
+     nothing below paints a literal color. -->
+<template name="section-theming">
+  <column gap="12" grow="1">
+    <text size="heading">Theming</text>
+    <text wrap="true" foreground="text_muted">theme_state_fn hands the runtime a pack, a scheme, and an accent derived from the model on every rebuild. Flipping any control below re-resolves every token reference in the window - no restart, no per-widget color.</text>
+
+    <scroll grow="1">
+      <column gap="12">
+
+        <column background="surface" radius="md" padding="16" gap="12">
+          <text size="lg">Theme controls</text>
+
+          <row gap="12" cross="center">
+            <text width="90" size="sm" foreground="text_muted">Pack</text>
+            <for each="theme_packs" key="id" as="p">
+              <toggle-button selected="{p.id == theme_pack}" on-press="set_theme_pack:{p.id}">{p.label}</toggle-button>
+            </for>
+          </row>
+
+          <row gap="12" cross="center">
+            <text width="90" size="sm" foreground="text_muted">Scheme</text>
+            <for each="theme_schemes" key="id" as="s">
+              <toggle-button selected="{s.id == theme_scheme}" on-press="set_theme_scheme:{s.id}">{s.label}</toggle-button>
+            </for>
+          </row>
+
+          <row gap="12" cross="center">
+            <text width="90" size="sm" foreground="text_muted">Accent</text>
+            <for each="accent_choices" key="id" as="a">
+              <toggle-button selected="{a.id == accent_pick}" on-press="set_accent:{a.id}">{a.label}</toggle-button>
+            </for>
+          </row>
+
+          <row gap="12" cross="center">
+            <text width="90" size="sm" foreground="text_muted">Contrast</text>
+            <toggle-button selected="{hc_active}" on-press="cycle_high_contrast">High contrast: {hc_name}</toggle-button>
+            <text size="sm" foreground="text_muted">cycles follows-OS - on - off; effective high contrast suppresses accents</text>
+          </row>
+        </column>
+
+        <column background="surface" radius="md" padding="16" gap="12">
+          <text size="lg">Live preview</text>
+          <text size="sm" foreground="text_muted">Ordinary widgets - every color here is a token reference, so this whole card re-themes when the state above changes. The spinner animates only while toggled on: an always-on animation repaints every frame, which is expensive on CPU rasterizers.</text>
+          <row gap="8">
+            <button variant="primary" on-press="noop">Primary</button>
+            <button variant="secondary" on-press="noop">Secondary</button>
+            <button variant="outline" on-press="noop">Outline</button>
+            <button variant="ghost" on-press="noop">Ghost</button>
+            <button variant="destructive" on-press="noop">Destructive</button>
+          </row>
+          <row gap="8" cross="center">
+            <badge>badge</badge>
+            <toggle-button selected="{preview_spin}" on-press="toggle_preview_spin">spin</toggle-button>
+            <if test="{preview_spin}">
+              <spinner/>
+            </if>
+            <text grow="1" foreground="text_muted">status: <span mono="true">{pack_name} · {scheme_name} · {accent_name} · hc={hc_name}</span></text>
+          </row>
+          <chart height="120" y-min="0" y-max="1" grid-lines="3" label="Accent response">
+            <series values="{chart_wave}" kind="area" color="accent" label="accent"/>
+            <series values="{cpu_trace}" kind="line" color="info" label="info"/>
+          </chart>
+        </column>
+
+      </column>
+    </scroll>
+  </column>
+</template>

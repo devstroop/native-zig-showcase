@@ -1,0 +1,45 @@
+<!-- The gallery map: header, a resizable split of section navigation
+     against one live demo pane, and a status bar. Each section is a
+     template in src/components/, imported at the top and gated with
+     <if> below - this file stays the map, not the terrain. The split's
+     fraction is model state: drag the divider, `on-resize` echoes the
+     applied value back through `value`, and rebuilds never fight it. -->
+
+<import src="components/section-overview.native"/>
+<import src="components/section-controls.native"/>
+<import src="components/section-layout.native"/>
+<import src="components/section-data.native"/>
+<import src="components/section-overlays.native"/>
+<import src="components/section-rich.native"/>
+<import src="components/section-theming.native"/>
+<import src="components/section-playground.native"/>
+
+<column grow="1">
+  <row padding="16" gap="8" cross="center" background="surface">
+    <text size="lg">Native Zig Showcase</text>
+    <badge>gallery</badge>
+    <spacer grow="1"/>
+    <text foreground="text_muted">{section_title}</text>
+  </row>
+  <split grow="1" value="{sidebar_split}" on-resize="sidebar_resized">
+    <column gap="2" padding="12" min-width="200" max-width="360">
+      <text size="sm" foreground="text_muted">SECTIONS</text>
+      <for each="nav_items" key="id" as="n">
+        <list-item selected="{section_index == n.id}" on-press="set_section:{n.id}">{n.title}</list-item>
+      </for>
+      <separator/>
+      <button size="sm" variant="ghost" on-press="next_section">Continue</button>
+    </column>
+    <column grow="1" padding="16" gap="12">
+      <if test="{section_index == 0}"><use template="section-overview"/></if>
+      <if test="{section_index == 1}"><use template="section-controls"/></if>
+      <if test="{section_index == 2}"><use template="section-layout"/></if>
+      <if test="{section_index == 3}"><use template="section-data"/></if>
+      <if test="{section_index == 4}"><use template="section-overlays"/></if>
+      <if test="{section_index == 5}"><use template="section-rich"/></if>
+      <if test="{section_index == 6}"><use template="section-theming"/></if>
+      <if test="{section_index == 7}"><use template="section-playground"/></if>
+    </column>
+  </split>
+  <status-bar>{section_title} | sidebar {percent(sidebar_split)}</status-bar>
+</column>
